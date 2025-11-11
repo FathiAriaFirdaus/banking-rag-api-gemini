@@ -1,4 +1,4 @@
 # nixpack.toml
 
 [start]
-cmd = "gunicorn app.app:app"
+cmd = "gunicorn wsgi:app"
