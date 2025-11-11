@@ -1,0 +1,2 @@
+*.pkl filter=lfs diff=lfs merge=lfs -text
+data/embeddings/all-mpnet-base-v2.pkl filter=lfs diff=lfs merge=lfs -text
