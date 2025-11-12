@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Konfigurasi path (TETAP SAMA)
-DOCUMENT_PATH = "rancangan-pkpb-tabungan-2023.md"
-EMBEDDING_PATH = "../data/embeddings/all-mpnet-base-v2.pkl"
-CHROMA_PATH = "../data/vector_db/chroma_db"
+DOCUMENT_PATH = "./rancangan-pkpb-tabungan-2023.md"
+EMBEDDING_PATH = "./data/embeddings/all-mpnet-base-v2.pkl"
+CHROMA_PATH = "./data/vector_db/chroma_db"
 
 # Gemini Configuration (BARU)
 GEMINI_CONFIG = {
