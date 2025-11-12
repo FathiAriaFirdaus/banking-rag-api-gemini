@@ -10,7 +10,7 @@ class Embedder:
     def __init__(self):
         self.embedding_model = None
         self.embedding_path = EMBEDDING_PATH
-        self.model_name = "sentence-transformers/all-mpnet-base-v2"
+        self.model_name = "sentence-transformers/all-MiniLM-L6-v2"
 
     def download_embedding_model(self):
         # Download and save embedding model
