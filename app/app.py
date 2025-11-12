@@ -54,8 +54,72 @@ def require_api_key(f):
         
         return f(*args, **kwargs)
     return decorated_function
-    
 
+
+@app.route('/api/documents/add', methods=['POST'])
+@require_api_key
+def add_documents():
+    # Handle markdown file upload
+    if 'file' not in request.files:
+        return jsonify({
+            "success": False,
+            "error": "No file uploaded"
+        }), 400
+        
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({
+            "success": False,
+            "error": "No file selected"
+        }), 400
+        
+    if not file.filename.endswith('.md'):
+        return jsonify({
+            "success": False,
+            "error": "Only markdown file are allowed"
+        }), 400
+        
+    try:
+        # Save uploaded file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.md') as temp_file:
+            file.save(temp_file.name)
+            temp_path = temp_file.name
+
+        # Load and process markdown file
+        chunks = loader.load_and_split(temp_path)
+
+        # Get current document count
+        current_count = vector_db.get_document_count()
+
+        # Generate new id
+        new_ids = [str(current_count + i) for i in range(len(chunks))]
+
+        # Add new documents to vector database
+        vector_db.add_documents(chunks, ids=new_ids)
+
+        # Clear temporarily path
+        os.unlink(temp_path)
+
+        return jsonify({
+            "success": True,
+            "response_message": "Markdown document uploaded and processed successfully",
+            "documents_count": vector_db.get_document_count(),
+            "chunks_created": len(chunks),
+            "filename": file.filename
+        })
+        
+    except Exception as e:
+        # Clean up temprarily files if exist
+        if 'temp_path' in locals() and os.path.exists(temp_path):
+            os.unlink(temp_path)
+
+        return jsonify({
+            "success": False,
+            "error": f"Error processing file: {str(e)}"
+        }), 500
+
+    
 @app.route('/api/documents', methods=['GET', 'POST', 'DELETE'])
 @require_api_key
 def configure_documents():
