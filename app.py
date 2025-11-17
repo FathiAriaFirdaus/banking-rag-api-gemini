@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from modules.loader_splitter import DocumentLoaderSplitter, MarkdownLoaderSplitter
+from modules.loader_splitter import DocumentLoaderSplitter
 from modules.vector_database import VectorDatabase
 from modules.gemini_multi_query import GeminiMultiQuery
 from config import DOCUMENT_PATH
@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Initialize Componenst
-loader = MarkdownLoaderSplitter()
+loader = DocumentLoaderSplitter()
 vector_db = VectorDatabase()
 gemini_mq = GeminiMultiQuery()
 
@@ -59,7 +59,7 @@ def require_api_key(f):
 @app.route('/api/documents/add', methods=['POST'])
 @require_api_key
 def add_documents():
-    # Handle markdown file upload
+    """Add documents to existing database (without deleting existing)"""
     if 'file' not in request.files:
         return jsonify({
             "success": False,
@@ -73,16 +73,19 @@ def add_documents():
             "success": False,
             "error": "No file selected"
         }), 400
+    
+    allowed_extensions = ['.md', '.xlsx', '.xls']
+    file_ext = os.path.splitext(file.filename)[1].lower()
         
-    if not file.filename.endswith('.md'):
+    if file_ext not in allowed_extensions:
         return jsonify({
             "success": False,
-            "error": "Only markdown file are allowed"
+            "error": f"Only {', '.join(allowed_extensions)} file are allowed"
         }), 400
         
     try:
         # Save uploaded file temporarily
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.md') as temp_file:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_file:
             file.save(temp_file.name)
             temp_path = temp_file.name
 
@@ -103,10 +106,11 @@ def add_documents():
 
         return jsonify({
             "success": True,
-            "response_message": "Markdown document uploaded and processed successfully",
+            "response_message": f"{file_ext.upper()} document uploaded and processed successfully",
             "documents_count": vector_db.get_document_count(),
             "chunks_created": len(chunks),
-            "filename": file.filename
+            "filename": file.filename,
+            "file_type": file_ext
         })
         
     except Exception as e:
@@ -126,10 +130,7 @@ def configure_documents():
     if request.method == 'DELETE':
         ids = vector_db.get_all_ids()
         vector_db.delete_documents(ids=ids)
-        return jsonify({
-            "response_message": "all document deleted",
-            "documents_count": vector_db.get_document_count()
-            }), 204
+        return '', 204
     
     elif request.method == 'GET':
         documents = vector_db.get_all_documents()
@@ -140,7 +141,7 @@ def configure_documents():
             })
     
     elif request.method == 'POST':
-        # Handle markdown file upload
+        """Replace ALL documents in database"""
         if 'file' not in request.files:
             return jsonify({
                 "success": False,
@@ -155,15 +156,19 @@ def configure_documents():
                 "error": "No file selected"
             }), 400
         
-        if not file.filename.endswith('.md'):
+        # Support both .md and .xlsx files
+        allowed_extensions = ['.md', '.xlsx', '.xls']
+        file_ext = os.path.splitext(file.filename)[1].lower()
+        
+        if file_ext not in allowed_extensions:
             return jsonify({
                 "success": False,
-                "error": "Only markdown file are allowed"
+                "error": f"Only {', '.join(allowed_extensions)} file are allowed"
             }), 400
         
         try:
             # Save uploaded file temporarily
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.md') as temp_file:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_file:
                 file.save(temp_file.name)
                 temp_path = temp_file.name
 
@@ -186,7 +191,8 @@ def configure_documents():
                 "response_message": "Markdown document uploaded and processed successfully",
                 "documents_count": vector_db.get_document_count(),
                 "chunks_created": len(chunks),
-                "filename": file.filename
+                "filename": file.filename,
+                "file_type": file_ext
             })
         
         except Exception as e:
