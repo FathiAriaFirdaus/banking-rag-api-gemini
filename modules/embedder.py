@@ -17,9 +17,9 @@ class Embedder:
         try:
             logger.info(f"Downloading embedding model: {self.model_name}")
             huggingface_embedding = HuggingFaceEmbeddings(
-                model_name=self.model_name,
-                model_kwargs={'device': 'cpu'},
-                encode_kwargs={'normalize_embeddings': True}
+                model_name=self.model_name
+                # model_kwargs={'device': 'cpu'},
+                # encode_kwargs={'normalize_embeddings': True}
             )
 
             # Create directory if does not exist

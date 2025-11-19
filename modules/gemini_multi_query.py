@@ -68,26 +68,29 @@ class GeminiMultiQuery:
     
     def create_answer(self, question, documents):
         if not documents:
-            return "No Relevant Information Found"
+            return "Data terkait pertanyaan Anda sedang dalam pengembangan. Untuk sementara, saya dapat membantu dengan pertanyaan lain mengenai topik yang tersedia."
         
         # Prepare context
         context = "\n---\n".join([doc.page_content for doc in documents])
 
         # Simple prompt
         prompt = f"""
-        Anda adalah asisten AI yang ahli.
-        Berdasarkan informasi dari dokumen berikut, 
-        buatlah jawaban yang jelas dan ringkas dalam Bahasa Indonesia
-        untuk menjawab pertanyaan: "{question}"
-
-        INFORMASI DOKUMEN (KONTEKS):
-        ---
+        Konteks Referensi:
         {context}
-        ---
 
-        # JAWABAN: 
-        # Jika konteks dokumen tidak memuat informasi spesifik untuk menjawab pertanyaan tersebut, balas dengan sopan bahwa Anda tidak dapat menemukan informasi yang relevan di dokumen.
-        # """
+        Pertanyaan: {question}
+
+        Tugas: 
+        Beri jawaban yang paling membantu untuk pertanyaan di atas. Prioritaskan informasi dari konteks referensi jika tersedia dan relevan. Jika konteks tidak cukup, lengkapi dengan pengetahuan umum untuk memberikan jawaban yang komprehensif.
+
+        Prinsip:
+        - Fokus pada substansi jawaban
+        - Hindari frasa seperti "tidak ditemukan dalam dokumen" atau "maaf"
+        - Sampaikan dengan confident dan helpful
+        - Bahasa Indonesia yang natural
+
+        Jawaban:
+        """
 
         return self.llm_wrapper.ask(prompt)
     

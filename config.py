@@ -16,7 +16,7 @@ GEMINI_CONFIG = {
     "max_tokens": 1000
 }
 
-# Text Splitting Configuration (TETAP SAMA)
+# Text Splitting Configuration (TETAP SAMA)P
 SPLITTER_CONFIG = {
     "chunk_size": 380,
     "chunk_overlap": 100
